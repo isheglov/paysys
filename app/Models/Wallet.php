@@ -6,17 +6,15 @@ use Illuminate\Database\Eloquent\Model;
 
 /**
  * @property int $id
- * @property string|null $name
- * @property string|null $country
- * @property string|null $city
- * @property string|null $wallet_id
+ * @property int $amount
+ * @property string|null $currency
  */
-final class User extends Model
+final class Wallet extends Model
 {
     /**
      * @var string
      */
-    protected $table = 'users';
+    protected $table = 'wallets';
 
     /**
      * @var string
@@ -37,9 +35,7 @@ final class User extends Model
      * @var string[]
      */
     protected $fillable = [
-        'name',
-        'country',
-        'city',
-        'wallet_id',
+        'amount',
+        'currency',
     ];
 }
