@@ -13,7 +13,7 @@ class AddWalletIdToUser extends Migration
     {
         Schema::table('users', function (Blueprint $table) {
             $table->bigInteger('wallet_id');
-            $table->index('wallet_id');
+            $table->index('wallet_id', 'ix__wallet_id__users');
 
             $table->dropColumn('currency');
         });
@@ -25,9 +25,9 @@ class AddWalletIdToUser extends Migration
     public function down()
     {
         Schema::table('users', function (Blueprint $table) {
-            $table->string('currency');
+            $table->string('currency')->nullable();
 
-            //$table->dropIndex('wallet_id');
+            $table->dropIndex('ix__wallet_id__users');
             $table->dropColumn('wallet_id');
         });
     }

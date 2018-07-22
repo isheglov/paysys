@@ -18,3 +18,4 @@ Route::middleware('auth:api')->get('/user', function (Request $request) {
 });
 
 Route::post('user', 'User\CreateController@create');
+Route::put('wallet/{walletId}/charge', 'Wallet\ChargeController@charge');

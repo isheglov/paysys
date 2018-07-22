@@ -17,9 +17,9 @@ class AddUniqueToUsers extends Migration
                     'name',
                     'country',
                     'city',
-                    'currency',
+                    'wallet_id'
                 ],
-                'uq__name_country_city_currency__users'
+                'uq__name_country_city_wallet_id__users'
             );
         });
     }
@@ -30,7 +30,7 @@ class AddUniqueToUsers extends Migration
     public function down()
     {
         Schema::table('users', function (Blueprint $table) {
-            $table->dropUnique('uq__name_country_city_currency__users');
+            $table->dropUnique('uq__name_country_city_wallet_id__users');
         });
     }
 }

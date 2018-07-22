@@ -153,6 +153,8 @@ return [
         App\Providers\Http\Controllers\User\CreateConroller\ServiceProvider::class,
         App\Providers\Operation\User\Create\ServiceProvider::class,
         App\Providers\Repositories\ServiceProvider::class,
+        App\Providers\Http\Controllers\Wallet\ChargeController\ServiceProvider::class,
+        App\Providers\Operation\Wallet\Charge\ServiceProvider::class,
 
         /*
          * Application Service Providers...
