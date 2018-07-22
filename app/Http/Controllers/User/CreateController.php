@@ -30,8 +30,6 @@ final class CreateController extends Controller
      */
     public function create(Request $user): JsonResponse
     {
-        var_dump($user->get('name'));
-
         if (!$this->validateRequest()) {
             return $this->response('Validation error', Response::HTTP_BAD_REQUEST);
         }
