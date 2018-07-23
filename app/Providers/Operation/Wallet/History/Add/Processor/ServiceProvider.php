@@ -1,8 +1,8 @@
 <?php
 
-namespace App\Providers\Operation\Wallet\Transfer;
+namespace App\Providers\Operation\Wallet\History\Add\Processor;
 
-use App\Operation\Wallet\Transfer\Service;
+use App\Operation\Wallet\History\Add\Processor;
 use Illuminate\Container\Container;
 use Illuminate\Support\ServiceProvider as BaseServiceProvider;
 
@@ -14,13 +14,11 @@ final class ServiceProvider extends BaseServiceProvider
     public function register()
     {
         $this->app->bind(
-            'paysys.wallet.transfer.service',
+            'paysys.wallet.history.add.processor',
             function(Container $app) {
                 return
-                    new Service(
-                        $app->make('paysys.wallet.repository'),
-                        $app->make('paysys.wallet.history.add.processor'),
-                        $app->make('log')
+                    new Processor(
+                        $app->make('paysys.history.repository')
                     );
             }
         );

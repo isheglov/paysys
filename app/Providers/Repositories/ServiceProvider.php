@@ -2,6 +2,7 @@
 
 namespace App\Providers\Repositories;
 
+use App\Repositories\HistoryRepository;
 use App\Repositories\UserRepository;
 use App\Repositories\WalletRepository;
 use Illuminate\Support\ServiceProvider as BaseServiceProvider;
@@ -21,6 +22,11 @@ final class ServiceProvider extends BaseServiceProvider
         $this->app->bind(
             'paysys.wallet.repository',
             WalletRepository::class
+        );
+
+        $this->app->bind(
+            'paysys.history.repository',
+            HistoryRepository::class
         );
     }
 }

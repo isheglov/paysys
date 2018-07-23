@@ -4,6 +4,8 @@ namespace App\Operation\Wallet\Transfer;
 
 use App\Dto\ErroneousResponse;
 use App\Exceptions\EntityNotFoundException;
+use App\Operation\Wallet\History\Add\Dto\History;
+use App\Operation\Wallet\History\Add\ProcessorInterface;
 use App\Operation\Wallet\Transfer\Dto\Request;
 use App\Repositories\WalletRepositoryInterface;
 use App\Service\ServiceInterface;
@@ -23,14 +25,24 @@ final class Service implements ServiceInterface
     private $walletRepository;
 
     /**
+     * @var ProcessorInterface
+     */
+    private $addHistoryProcessor;
+
+    /**
      * @param WalletRepositoryInterface $walletRepository
+     * @param ProcessorInterface $addHistoryProcessor
      * @param LoggerInterface $logger
      */
-    public function __construct(WalletRepositoryInterface $walletRepository, LoggerInterface $logger)
-    {
+    public function __construct(
+        WalletRepositoryInterface $walletRepository,
+        ProcessorInterface $addHistoryProcessor,
+        LoggerInterface $logger
+    ) {
         $this->setLogger($logger);
 
         $this->walletRepository = $walletRepository;
+        $this->addHistoryProcessor = $addHistoryProcessor;
     }
     /**
      * {@inheritdoc}
@@ -70,13 +82,23 @@ final class Service implements ServiceInterface
         }
 
         DB::beginTransaction();
-        //write history
+        $this->addHistoryProcessor->process(
+            new History(
+                $walletFrom,
+                -1*$request->getAmount(),
+                -1*$request->getAmount())
+        );
         $walletFrom->amount -= $request->getAmount();
         $this->walletRepository->save($walletFrom);
 
         $walletTo->amount += $request->getAmount();
         $this->walletRepository->save($walletTo);
-        //write history
+        $this->addHistoryProcessor->process(
+            new History(
+                $walletTo,
+                $request->getAmount(),
+                $request->getAmount())
+        );
         DB::commit();
 
         $this->logger->info('Creating response');

@@ -2,11 +2,13 @@
 
 namespace App\Operation\Wallet\History\Add;
 
+use App\Operation\Wallet\History\Add\Dto\History;
+
 interface ProcessorInterface
 {
     /**
-     * @param $historyDto
+     * @param History $historyDto
      * @return void
      */
-    public function process($historyDto);
+    public function process(History $historyDto);
 }
