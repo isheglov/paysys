@@ -4,14 +4,14 @@ namespace App\Http\Controllers\Wallet;
 
 use App\Dto\ErroneousResponse;
 use App\Http\Controllers\Controller;
-use App\Operation\Wallet\Charge\Service;
+use App\Operation\Wallet\Transfer\Service;
 use App\Service\ServiceInterface;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Symfony\Component\HttpFoundation\Response;
-use App\Operation\Wallet\Charge\Dto\Request as RequestDto;
+use App\Operation\Wallet\Transfer\Dto\Request as RequestDto;
 
-final class ChargeController extends Controller
+final class TransferController extends Controller
 {
     /**
      * @var ServiceInterface
@@ -28,18 +28,18 @@ final class ChargeController extends Controller
 
     /**
      * @param Request $wallet
-     * @param int $walletId
+     * @param int $walletFromId
+     * @param int $walletToId
      * @return JsonResponse
      */
-    public function charge(Request $wallet, int $walletId): JsonResponse
+    public function transfer(Request $wallet, int $walletFromId, int $walletToId): JsonResponse
     {
-        var_dump($walletId);
 
         if (!$this->validateRequest()) {
             return $this->response('Validation error', Response::HTTP_BAD_REQUEST);
         }
 
-        $response = $this->service->behave(new RequestDto($walletId, $wallet->get('amount')));
+        $response = $this->service->behave(new RequestDto($walletFromId, $walletToId, $wallet->get('amount')));
 
         if ($response instanceof ErroneousResponse) {
             return $this->response($response->getMessage(), Response::HTTP_OK);

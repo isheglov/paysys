@@ -2,6 +2,7 @@
 
 namespace App\Operation\Wallet\Charge;
 
+use App\Dto\ErroneousResponse;
 use App\Exceptions\EntityNotFoundException;
 use App\Models\Wallet;
 use App\Operation\Wallet\Charge\Dto\Request;
@@ -13,6 +14,8 @@ use Psr\Log\LoggerInterface;
 final class Service implements ServiceInterface
 {
     use LoggerAwareTrait;
+
+    const MAX_WALLET_CAPACITY = 2147483647;
 
     /**
      * @var WalletRepositoryInterface
@@ -41,7 +44,12 @@ final class Service implements ServiceInterface
             $wallet = $this->findWallet($request->getWalletId());
         } catch (EntityNotFoundException $e) {
             $this->logger->error(sprintf("Wallet with id: '%s' not found", $request->getWalletId()), ['e' => $e]);
-            return null;
+            return [];
+        }
+
+        $this->logger->info('Checking amount not to much');
+        if ($wallet->amount + $request->getAmount() >= self::MAX_WALLET_CAPACITY) {
+            return new ErroneousResponse('Amount is to big');
         }
 
         $this->logger->info('Charging wallet');

@@ -155,6 +155,8 @@ return [
         App\Providers\Repositories\ServiceProvider::class,
         App\Providers\Http\Controllers\Wallet\ChargeController\ServiceProvider::class,
         App\Providers\Operation\Wallet\Charge\ServiceProvider::class,
+        App\Providers\Operation\Wallet\Transfer\ServiceProvider::class,
+        App\Providers\Http\Controllers\Wallet\TransferController\ServiceProvider::class,
 
         /*
          * Application Service Providers...
