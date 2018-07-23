@@ -158,6 +158,8 @@ return [
         App\Providers\Operation\Wallet\Transfer\ServiceProvider::class,
         App\Providers\Http\Controllers\Wallet\TransferController\ServiceProvider::class,
         App\Providers\Operation\Wallet\History\Add\Processor\ServiceProvider::class,
+        App\Providers\Operation\Rate\Add\ServiceProvider::class,
+        App\Providers\Http\Controllers\Rate\AddController\ServiceProvider::class,
 
         /*
          * Application Service Providers...
