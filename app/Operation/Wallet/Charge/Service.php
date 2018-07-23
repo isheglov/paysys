@@ -6,8 +6,11 @@ use App\Dto\ErroneousResponse;
 use App\Exceptions\EntityNotFoundException;
 use App\Models\Wallet;
 use App\Operation\Wallet\Charge\Dto\Request;
+use App\Operation\Wallet\History\Add\Dto\History;
+use App\Operation\Wallet\History\Add\ProcessorInterface;
 use App\Repositories\WalletRepositoryInterface;
 use App\Service\ServiceInterface;
+use Illuminate\Support\Facades\DB;
 use Psr\Log\LoggerAwareTrait;
 use Psr\Log\LoggerInterface;
 
@@ -23,14 +26,24 @@ final class Service implements ServiceInterface
     private $walletRepository;
 
     /**
+     * @var ProcessorInterface
+     */
+    private $addHistoryProcessor;
+
+    /**
      * @param WalletRepositoryInterface $walletRepository
+     * @param ProcessorInterface $addHistoryProcessor
      * @param LoggerInterface $logger
      */
-    public function __construct(WalletRepositoryInterface $walletRepository, LoggerInterface $logger)
-    {
+    public function __construct(
+        WalletRepositoryInterface $walletRepository,
+        ProcessorInterface $addHistoryProcessor,
+        LoggerInterface $logger
+    ) {
         $this->setLogger($logger);
 
         $this->walletRepository = $walletRepository;
+        $this->addHistoryProcessor = $addHistoryProcessor;
     }
 
     /**
@@ -52,11 +65,23 @@ final class Service implements ServiceInterface
             return new ErroneousResponse('Amount is to big');
         }
 
+        DB::beginTransaction();
+
         $this->logger->info('Charging wallet');
         $this->chargeWallet($request->getAmount(), $wallet);
 
+        $this->logger->info('Saving history');
+        $this->addHistoryProcessor->process(
+            new History(
+                $wallet,
+                $request->getAmount(),
+                $request->getAmount())
+        );
+
         $this->logger->info('Saving wallet');
         $this->saveWallet($wallet);
+
+        DB::commit();
 
         $this->logger->info('Returning response');
         return $wallet;

@@ -19,6 +19,7 @@ final class ServiceProvider extends BaseServiceProvider
                 return
                     new Service(
                         $app->make('paysys.wallet.repository'),
+                        $app->make('paysys.wallet.history.add.processor'),
                         $app->make('log')
                     );
             }
