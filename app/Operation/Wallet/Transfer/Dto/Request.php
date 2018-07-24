@@ -15,20 +15,20 @@ class Request
     private $walletToId;
 
     /**
-     * @var int
+     * @var Money
      */
-    private $amount;
+    private $money;
 
     /**
      * @param int $walletFromId
      * @param int $walletToId
-     * @param int $amount
+     * @param Money $money
      */
-    public function __construct(int $walletFromId, int $walletToId, int $amount)
+    public function __construct(int $walletFromId, int $walletToId, Money $money)
     {
         $this->walletFromId = $walletFromId;
         $this->walletToId = $walletToId;
-        $this->amount = $amount;
+        $this->money = $money;
     }
 
     /**
@@ -48,10 +48,10 @@ class Request
     }
 
     /**
-     * @return int
+     * @return Money
      */
-    public function getAmount(): int
+    public function getMoney(): Money
     {
-        return $this->amount;
+        return $this->money;
     }
 }

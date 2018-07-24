@@ -11,4 +11,10 @@ interface RateRepositoryInterface
      * @return void
      */
     public function save(Rate $rate);
+
+    /**
+     * @param string $currency
+     * @return float
+     */
+    public function findByCurrency(string $currency): float;
 }

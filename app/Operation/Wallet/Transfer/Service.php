@@ -4,6 +4,8 @@ namespace App\Operation\Wallet\Transfer;
 
 use App\Dto\ErroneousResponse;
 use App\Exceptions\EntityNotFoundException;
+use App\Models\Wallet;
+use App\Operation\Common\CurrencyConverter\CurrencyConverterInterface;
 use App\Operation\Wallet\History\Add\Dto\History;
 use App\Operation\Wallet\History\Add\ProcessorInterface;
 use App\Operation\Wallet\Transfer\Dto\Request;
@@ -30,19 +32,27 @@ final class Service implements ServiceInterface
     private $addHistoryProcessor;
 
     /**
+     * @var CurrencyConverterInterface
+     */
+    private $currencyConverter;
+
+    /**
      * @param WalletRepositoryInterface $walletRepository
      * @param ProcessorInterface $addHistoryProcessor
+     * @param CurrencyConverterInterface $currencyConverter
      * @param LoggerInterface $logger
      */
     public function __construct(
         WalletRepositoryInterface $walletRepository,
         ProcessorInterface $addHistoryProcessor,
+        CurrencyConverterInterface $currencyConverter,
         LoggerInterface $logger
     ) {
         $this->setLogger($logger);
 
         $this->walletRepository = $walletRepository;
         $this->addHistoryProcessor = $addHistoryProcessor;
+        $this->currencyConverter = $currencyConverter;
     }
     /**
      * {@inheritdoc}
@@ -53,31 +63,26 @@ final class Service implements ServiceInterface
         try {
             $this->logger->info('Finding wallet from');
             $walletFrom = $this->walletRepository->findOne($request->getWalletFromId());
-        } catch (EntityNotFoundException $e) {
-            $errorMessage = sprintf("WalletFrom with id: '%s' not found", $request->getWalletFromId());
 
-            $this->logger->error($errorMessage, ['e' => $e]);
-            return new ErroneousResponse($errorMessage);
-        }
-
-        try {
-            $this->logger->info('Finding wallet from');
+            $this->logger->info('Finding wallet to');
             $walletTo = $this->walletRepository->findOne($request->getWalletToId());
         } catch (EntityNotFoundException $e) {
-            $errorMessage = sprintf("WalletTo with id: '%s' not found", $request->getWalletToId());
+            $errorMessage = sprintf("Wallet with id: '%s' not found", $request->getWalletToId());
 
             $this->logger->error($errorMessage, ['e' => $e]);
             return new ErroneousResponse($errorMessage);
         }
 
-        // в бр
+        $amountForWalletFrom = $this->convertAmount($request, $walletFrom);
+        $amountForWalletTo = $this->convertAmount($request, $walletTo);
+
         $this->logger->info('Checking amount enough');
-        if ($walletFrom->amount < $request->getAmount()) {
+        if ($walletFrom->amount < $amountForWalletFrom) {
             return new ErroneousResponse('Not enough money');
         }
 
         $this->logger->info('Checking amount not to much');
-        if ($walletTo->amount + $request->getAmount() >= self::MAX_WALLET_CAPACITY) {
+        if ($walletTo->amount + $amountForWalletTo >= self::MAX_WALLET_CAPACITY) {
             return new ErroneousResponse('Amount is to big');
         }
 
@@ -85,23 +90,43 @@ final class Service implements ServiceInterface
         $this->addHistoryProcessor->process(
             new History(
                 $walletFrom,
-                -1*$request->getAmount(),
-                -1*$request->getAmount())
+                -1 * $amountForWalletFrom,
+                -1 * $amountForWalletFrom)
         );
-        $walletFrom->amount -= $request->getAmount();
+        $walletFrom->amount -= $amountForWalletFrom;
         $this->walletRepository->save($walletFrom);
 
-        $walletTo->amount += $request->getAmount();
+        $walletTo->amount += $amountForWalletTo;
         $this->walletRepository->save($walletTo);
         $this->addHistoryProcessor->process(
             new History(
                 $walletTo,
-                $request->getAmount(),
-                $request->getAmount())
+                $amountForWalletTo,
+                $amountForWalletTo
+            )
         );
         DB::commit();
 
         $this->logger->info('Creating response');
         return [$walletFrom, $walletTo];
+    }
+
+    /**
+     * @param Request $request
+     * @param Wallet $wallet
+     * @return int
+     */
+    protected function convertAmount(Request $request, Wallet $wallet): int
+    {
+        if ($wallet->currency != $request->getMoney()->getCurrency()) {
+            return
+                $this->currencyConverter->convert(
+                    $request->getMoney()->getAmount(),
+                    $request->getMoney()->getCurrency(),
+                    $wallet->currency
+                );
+        }
+
+        return $request->getMoney()->getAmount();
     }
 }
