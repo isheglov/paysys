@@ -14,7 +14,7 @@ abstract class BaseRepository
     private $app;
 
     /**
-     * @var mixed
+     * @var Model
      */
     protected $model;
 

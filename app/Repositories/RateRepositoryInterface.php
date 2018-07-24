@@ -14,7 +14,7 @@ interface RateRepositoryInterface
 
     /**
      * @param string $currency
-     * @return float
+     * @return Rate
      */
-    public function findByCurrency(string $currency): float;
+    public function findByCurrency(string $currency): Rate;
 }

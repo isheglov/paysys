@@ -34,15 +34,20 @@ final class Service implements ServiceInterface
      */
     public function behave($request)
     {
+
+        //var_dump($request);
         $rateList = $request->get('rates', []);
 
         foreach ($rateList as $curr => $rate) {
+
 
             $rateModel = new Rate();
 
             $rateModel->curr = $curr;
             $rateModel->rate = $rate;
             $rateModel->date = date('Y-m-d');
+
+            var_dump($rateModel);
 
             $this->rateRepository->save($rateModel);
         }

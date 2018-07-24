@@ -29,11 +29,11 @@ final class CurrencyConverter implements CurrencyConverterInterface
         }
 
         if ($from != 'usd') {
-            return $amount * $this->rateRepository->findByCurrency($from);
+            return $amount * $this->rateRepository->findByCurrency($from)->curr;
         }
 
         if ($to != 'usd') {
-            return $amount / $this->rateRepository->findByCurrency($to);
+            return $amount / $this->rateRepository->findByCurrency($to)->curr;
         }
     }
 }

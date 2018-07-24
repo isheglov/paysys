@@ -160,6 +160,7 @@ return [
         App\Providers\Operation\Wallet\History\Add\Processor\ServiceProvider::class,
         App\Providers\Operation\Rate\Add\ServiceProvider::class,
         App\Providers\Http\Controllers\Rate\AddController\ServiceProvider::class,
+        App\Providers\Operation\Rate\Common\ServiceProvider::class,
 
         /*
          * Application Service Providers...
