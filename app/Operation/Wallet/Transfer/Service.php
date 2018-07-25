@@ -92,8 +92,8 @@ final class Service implements ServiceInterface
         $this->addHistoryProcessor->process(
             new History(
                 $walletFrom,
-                -1 * $amountForWalletFrom,
-                -1 * $amountForWalletFrom)
+                -1 * $amountForWalletFrom
+            )
         );
         $walletFrom->amount -= $amountForWalletFrom;
         $this->walletRepository->save($walletFrom);
@@ -103,7 +103,6 @@ final class Service implements ServiceInterface
         $this->addHistoryProcessor->process(
             new History(
                 $walletTo,
-                $amountForWalletTo,
                 $amountForWalletTo
             )
         );

@@ -17,20 +17,13 @@ class History
     private $amount;
 
     /**
-     * @var int
-     */
-    private $amountUsd;
-
-    /**
      * @param Wallet $wallet
      * @param int $amount
-     * @param int $amountUsd
      */
-    public function __construct(Wallet $wallet, int $amount, int $amountUsd)
+    public function __construct(Wallet $wallet, int $amount)
     {
         $this->wallet = $wallet;
         $this->amount = $amount;
-        $this->amountUsd = $amountUsd;
     }
 
     /**
@@ -47,13 +40,5 @@ class History
     public function getAmount(): int
     {
         return $this->amount;
-    }
-
-    /**
-     * @return int
-     */
-    public function getAmountUsd(): int
-    {
-        return $this->amountUsd;
     }
 }

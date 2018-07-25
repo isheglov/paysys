@@ -18,7 +18,8 @@ final class ServiceProvider extends BaseServiceProvider
             function(Container $app) {
                 return
                     new Processor(
-                        $app->make('paysys.history.repository')
+                        $app->make('paysys.history.repository'),
+                        $app->make('paysys.currency.converter')
                     );
             }
         );

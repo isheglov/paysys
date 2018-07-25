@@ -74,8 +74,8 @@ final class Service implements ServiceInterface
         $this->addHistoryProcessor->process(
             new History(
                 $wallet,
-                $request->getAmount(),
-                $request->getAmount())
+                $request->getAmount()
+            )
         );
 
         $this->logger->info('Saving wallet');

@@ -32,11 +32,9 @@ final class CurrencyConverter implements CurrencyConverterInterface
     }
 
     /**
-     * @param int $amount
-     * @param string $from
-     * @return float|int
+     * {@inheritdoc}
      */
-    public function convertToUsd(int $amount, string $from)
+    public function convertToUsd(int $amount, string $from): int
     {
         if ($from == 'usd') {
             return $amount;
@@ -46,11 +44,9 @@ final class CurrencyConverter implements CurrencyConverterInterface
     }
 
     /**
-     * @param int $amount
-     * @param string $to
-     * @return float|int
+     * {@inheritdoc}
      */
-    public function convertFromUsd(int $amount, string $to)
+    public function convertFromUsd(int $amount, string $to): int
     {
         if ($to == 'usd') {
             return $amount;
