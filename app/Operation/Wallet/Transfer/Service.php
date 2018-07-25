@@ -74,7 +74,9 @@ final class Service implements ServiceInterface
         }
 
         $amountForWalletFrom = $this->convertAmount($request, $walletFrom);
+        $this->logger->info(sprintf('Amount from %s', $amountForWalletFrom));
         $amountForWalletTo = $this->convertAmount($request, $walletTo);
+        $this->logger->info(sprintf('Amount to %s', $amountForWalletTo));
 
         $this->logger->info('Checking amount enough');
         if ($walletFrom->amount < $amountForWalletFrom) {

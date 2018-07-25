@@ -22,10 +22,11 @@ final class RateRepository extends BaseRepository implements RateRepositoryInter
         return
             $this
                 ->model
-                ->query()
-                    ->where('date', '=', 'NOW()')
-                    ->where('curr', '=', trim(strtolower($currency)))
-                    ->first()
+                    ->query()
+                        ->where('date', '=', date('Y-m-d'))
+                        ->where('curr', '=', trim(strtolower($currency)))
+                        ->get()
+                        ->first()
             ;
     }
 

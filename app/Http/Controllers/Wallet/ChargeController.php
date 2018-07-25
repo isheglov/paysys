@@ -33,8 +33,6 @@ final class ChargeController extends Controller
      */
     public function charge(Request $wallet, int $walletId): JsonResponse
     {
-        var_dump($walletId);
-
         if (!$this->validateRequest()) {
             return $this->response('Validation error', Response::HTTP_BAD_REQUEST);
         }
