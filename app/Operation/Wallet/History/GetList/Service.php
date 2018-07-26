@@ -38,7 +38,7 @@ final class Service implements ServiceInterface
         $criteria = $this->createCriteria($request);
 
         $this->logger->info('Finding operations');
-        $historyListPaginateAware = $this->repository->findByCriteria($criteria);
+        $historyListPaginateAware = $this->repository->findByCriteriaWithPagination($criteria);
 
         $this->logger->info('Creating response');
         return $historyListPaginateAware;

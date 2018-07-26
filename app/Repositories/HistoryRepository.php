@@ -5,6 +5,7 @@ namespace App\Repositories;
 use App\Models\History;
 use App\Operation\Wallet\History\GetList\Dto\Criteria;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
+use Illuminate\Support\Collection;
 
 final class HistoryRepository extends BaseRepository implements HistoryRepositoryInterface
 {
@@ -19,7 +20,17 @@ final class HistoryRepository extends BaseRepository implements HistoryRepositor
     /**
      * {@inheritdoc}
      */
-    public function findByCriteria(Criteria $criteria): LengthAwarePaginator
+    public function findByCriteria(Criteria $criteria): Collection
+    {
+        $queryBuilder = $this->createQueryBuilder($criteria);
+
+        return $queryBuilder->get();
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function findByCriteriaWithPagination(Criteria $criteria): LengthAwarePaginator
     {
         $queryBuilder = $this->createQueryBuilder($criteria);
 
@@ -35,7 +46,7 @@ final class HistoryRepository extends BaseRepository implements HistoryRepositor
 
         $queryBuilder = $queryBuilder->selectRaw('sum(amount)');
 
-        return $queryBuilder->first()->sum;
+        return (int) $queryBuilder->first()->sum;
     }
 
     /**
@@ -47,7 +58,7 @@ final class HistoryRepository extends BaseRepository implements HistoryRepositor
 
         $queryBuilder = $queryBuilder->selectRaw('sum(amount_usd)');
 
-        return $queryBuilder->first()->sum;
+        return (int) $queryBuilder->first()->sum;
     }
 
     /**

@@ -5,7 +5,7 @@
         <div class="col-sm-offset-2 col-sm-8">
             <div class="panel panel-default">
                 <div class="panel-body">
-                    <form>
+                    <form id="main">
                         <div>
                             <select name="userId">
                                 @foreach ($userList as $user)
@@ -31,8 +31,8 @@
                                 </tr>
                                 @foreach ($operationList as $operation)
                                     <tr>
-                                        <td class="table-text"><div>{{ $operation->amount }}</div></td>
-                                        <td class="table-text"><div>{{ $operation->date }}</div></td>
+                                        <td class="table-text"><div>{{ $operation->getAmount() }}</div></td>
+                                        <td class="table-text"><div>{{ $operation->getDate() }}</div></td>
                                     </tr>
                                 @endforeach
                             </tbody>
@@ -47,11 +47,22 @@
                         @endforeach
                     </form>
 
-                    <p>sumInWalletCurrency: {{ $sumInWalletCurrency }}</p>
-                    <p>sumInUSD: {{ $sumInUSD }}</p>
-                    <button>Download report</button>
+                    <p>Sum for period: {{ $sumInWalletCurrency }} {{ $walletCurr }} ({{ $sumInUSD }} USD)</p>
+                    <button id="export">Download report</button>
                 </div>
             </div>
         </div>
     </div>
+    <script type="application/javascript">
+        $("#export").on(
+            'click',
+            function() {
+                let $form = $('#main');
+
+                $form.attr('action', 'report/export');
+                $form.submit();
+                $form.attr('action', 'report');
+            }
+        );
+    </script>
 @endsection

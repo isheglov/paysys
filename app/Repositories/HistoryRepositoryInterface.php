@@ -5,6 +5,7 @@ namespace App\Repositories;
 use App\Models\History;
 use App\Operation\Wallet\History\GetList\Dto\Criteria;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
+use Illuminate\Support\Collection;
 
 interface HistoryRepositoryInterface
 {
@@ -16,9 +17,15 @@ interface HistoryRepositoryInterface
 
     /**
      * @param Criteria $criteria
+     * @return Collection
+     */
+    public function findByCriteria(Criteria $criteria): Collection;
+
+    /**
+     * @param Criteria $criteria
      * @return LengthAwarePaginator
      */
-    public function findByCriteria(Criteria $criteria): LengthAwarePaginator;
+    public function findByCriteriaWithPagination(Criteria $criteria): LengthAwarePaginator;
 
     /**
      * @param Criteria $criteria

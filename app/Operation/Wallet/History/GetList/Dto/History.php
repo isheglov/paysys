@@ -5,7 +5,7 @@ namespace App\Operation\Wallet\History\GetList\Dto;
 class History
 {
     /**
-     * @var int
+     * @var float
      */
     private $amount;
 
@@ -15,19 +15,19 @@ class History
     private $date;
 
     /**
-     * @param int $amount
+     * @param float $amount
      * @param string $date
      */
-    public function __construct(int $amount, string $date)
+    public function __construct(float $amount, string $date)
     {
         $this->amount = $amount;
         $this->date = $date;
     }
 
     /**
-     * @return int
+     * @return float
      */
-    public function getAmount(): int
+    public function getAmount(): float
     {
         return $this->amount;
     }

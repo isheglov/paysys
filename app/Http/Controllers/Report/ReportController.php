@@ -3,8 +3,10 @@
 namespace App\Http\Controllers\Report;
 
 use App\Http\Controllers\Controller;
+use App\Models\History;
 use App\Models\User;
 use App\Operation\Wallet\History\GetList\Dto\Criteria;
+use App\Operation\Wallet\History\GetList\Dto\History as HistoryDto;
 use App\Operation\Wallet\History\GetList\Service;
 use App\Repositories\HistoryRepositoryInterface;
 use App\Service\ServiceInterface;
@@ -40,7 +42,23 @@ final class ReportController extends Controller
      */
     public function export(Request $request)
     {
-        // export file
+        $historyList = $this->historyRepository->findByCriteria($this->createCriteria($request));
+
+        $report = "Amount;Date\n";
+
+        /** @var History $history */
+        foreach ($historyList as $history) {
+            $report .= $this->formatAmount($history->amount) . ';' . $history->date . "\n";
+        }
+
+        return
+            response()
+                ->streamDownload(
+                    function () use ($report) {
+                        echo $report;
+                    },
+                    'report.csv'
+                );
     }
 
     /**
@@ -73,9 +91,9 @@ final class ReportController extends Controller
                     'dateFrom' => $request->input('dateFrom'),
                     'dateTo' => $request->input('dateTo'),
                     'operationList' => $this->getOperationList($historyListPaginationAware),
-                    'sumInWalletCurrency' => (float) $sum / 100,
-                    'sumInUSD' => (float) $sumUsd / 100,
-                    'walletCurr' => 'eur',
+                    'sumInWalletCurrency' => $this->formatAmount($sum),
+                    'sumInUSD' => $this->formatAmount($sumUsd),
+                    'walletCurr' => $this->getWalletCurrency($request),
                 ]
             );
     }
@@ -90,7 +108,13 @@ final class ReportController extends Controller
             return [];
         }
 
-        return $historyListPaginationAware->items();
+        $historyList = [];
+
+        foreach ($historyListPaginationAware->items() as $historyModel) {
+            $historyList[] = new HistoryDto($this->formatAmount($historyModel->amount), $historyModel->date);
+        }
+
+        return $historyList;
     }
 
     /**
@@ -128,5 +152,33 @@ final class ReportController extends Controller
         }
 
         return range(1, $countPages);
+    }
+
+    /**
+     * @param $sum
+     * @return float|int
+     */
+    private function formatAmount($sum)
+    {
+        return (float)$sum / 100;
+    }
+
+    /**
+     * @param Request $request
+     * @return string
+     */
+    private function getWalletCurrency(Request $request)
+    {
+        if ($request->input('userId') === null) {
+            return '';
+        }
+
+        $curr = User::query()
+            ->select('currency')
+            ->leftJoin('wallets', 'users.wallet_id', '=', 'wallets.id')
+            ->where('users.id', '=', $request->input('userId'))
+            ->first();
+
+        return strtoupper($curr->currency);
     }
 }
