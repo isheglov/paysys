@@ -8,13 +8,17 @@
                     <form>
                         <div>
                             <select name="userId">
-                                <option value="1">Петя</option>
-                                <option value="2">Коля</option>
-                                <option value="3">Вася</option>
+                                @foreach ($userList as $user)
+                                    @if ($userIdSelected == $user->id)
+                                        <option value="{{ $user->id }}" selected>{{ $user->name }}</option>
+                                        @continue
+                                    @endIf
+                                    <option value="{{ $user->id }}">{{ $user->name }}</option>
+                                @endforeach
                             </select>
 
-                            From: <input type="date" name="dateFrom"/>
-                            To: <input type="date" name="dateTo"/>
+                            From: <input type="date" name="dateFrom" value="{{ $dateFrom }}"/>
+                            To: <input type="date" name="dateTo" value="{{ $dateTo }}"/>
 
                             <input value="Show report" type="submit"/>
 
@@ -27,8 +31,8 @@
                                 </tr>
                                 @foreach ($operationList as $operation)
                                     <tr>
-                                        <td class="table-text"><div>{{ $operation->getAmount() }}</div></td>
-                                        <td class="table-text"><div>{{ $operation->getDate() }}</div></td>
+                                        <td class="table-text"><div>{{ $operation->amount }}</div></td>
+                                        <td class="table-text"><div>{{ $operation->date }}</div></td>
                                     </tr>
                                 @endforeach
                             </tbody>

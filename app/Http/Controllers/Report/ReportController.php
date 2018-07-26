@@ -4,9 +4,11 @@ namespace App\Http\Controllers\Report;
 
 use App\Http\Controllers\Controller;
 use App\Models\User;
-use App\Operation\Wallet\History\GetList\Dto\History;
+use App\Operation\Wallet\History\GetList\Dto\Criteria;
 use App\Operation\Wallet\History\GetList\Service;
+use App\Repositories\HistoryRepositoryInterface;
 use App\Service\ServiceInterface;
+use DB;
 use Illuminate\Contracts\View\View;
 use Illuminate\Http\Request;
 
@@ -18,11 +20,18 @@ final class ReportController extends Controller
     private $service;
 
     /**
-     * @param ServiceInterface|Service $service
+     * @var HistoryRepositoryInterface
      */
-    public function __construct(ServiceInterface $service)
+    private $historyRepository;
+
+    /**
+     * @param ServiceInterface|Service $service
+     * @param HistoryRepositoryInterface $historyRepository
+     */
+    public function __construct(ServiceInterface $service, HistoryRepositoryInterface $historyRepository)
     {
         $this->service = $service;
+        $this->historyRepository = $historyRepository;
     }
 
     /**
@@ -32,59 +41,56 @@ final class ReportController extends Controller
     public function show(Request $request)
     {
         $historyListPaginationAware = [];
+        $sum = 0;
+        $sumUsd = 0;
         if ($request->input('userId') !== null) {
             $historyListPaginationAware = $this->service->behave($request);
+
+            $sum = $this->historyRepository->sumByCriteria($this->createCriteria($request));
+            $sumUsd = $this->historyRepository->sumUsdByCriteria($this->createCriteria($request));
         }
-
-        var_dump($historyListPaginationAware->items());
-
-        var_dump($historyListPaginationAware->currentPage());
-        var_dump($historyListPaginationAware->total());
-
 
         return
             view(
                 'report',
                 [
-                    'userList' => [],
+                    'userList' => User::all(),
                     'pageList' => [],
-                    'userSelected' => new User(),
-                    'pageSelected' => 1,
-                    'dateFrom' => '2018-09-09',
-                    'dateTo' => '2018-09-09',
-                    'operationList' => $this->getDtoList(),
-                    'sumInWalletCurrency' => 12768376.8217,
-                    'sumInUSD' => 12312312.8217,
+                    'userIdSelected' => $request->input('userId'),
+                    'pageSelected' => $request->input('page'),
+                    'dateFrom' => $request->input('dateFrom'),
+                    'dateTo' => $request->input('dateTo'),
+                    'operationList' => $this->getOperationList($historyListPaginationAware),
+                    'sumInWalletCurrency' => (float) $sum / 100,
+                    'sumInUSD' => (float) $sumUsd / 100,
                 ]
             );
     }
 
     /**
-     * @return array
+     * @param $historyListPaginationAware
+     * @return mixed
      */
-    private function getDtoList(): array
+    private function getOperationList($historyListPaginationAware)
     {
-        return
-            [
-                $this->createDto(),
-                $this->createDto(),
-                $this->createDto(),
-                $this->createDto(),
-                $this->createDto(),
+        if (empty($historyListPaginationAware)) {
+            return [];
+        }
 
-                $this->createDto(),
-                $this->createDto(),
-                $this->createDto(),
-                $this->createDto(),
-                $this->createDto(),
-            ];
+        return $historyListPaginationAware->items();
     }
 
     /**
-     * @return History
+     * @param Request $request
+     * @return Criteria
      */
-    private function createDto(): History
+    private function createCriteria(Request $request): Criteria
     {
-        return new History(123, '2018-03-03');
+        return
+            new Criteria(
+                $request->input('userId'),
+                $request->input('dateFrom'),
+                $request->input('dateTo')
+            );
     }
 }

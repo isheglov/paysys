@@ -18,7 +18,8 @@ final class ServiceProvider extends BaseServiceProvider
             function(Container $app) {
                 return
                     new ReportController(
-                        $app->make('paysys.wallet.history.get_list.service')
+                        $app->make('paysys.wallet.history.get_list.service'),
+                        $app->make('paysys.history.repository')
                     );
             }
         );

@@ -19,4 +19,16 @@ interface HistoryRepositoryInterface
      * @return LengthAwarePaginator
      */
     public function findByCriteria(Criteria $criteria): LengthAwarePaginator;
+
+    /**
+     * @param Criteria $criteria
+     * @return int
+     */
+    public function sumByCriteria(Criteria $criteria): int;
+
+    /**
+     * @param Criteria $criteria
+     * @return int
+     */
+    public function sumUsdByCriteria(Criteria $criteria): int;
 }

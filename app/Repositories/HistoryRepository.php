@@ -21,12 +21,55 @@ final class HistoryRepository extends BaseRepository implements HistoryRepositor
      */
     public function findByCriteria(Criteria $criteria): LengthAwarePaginator
     {
+        $queryBuilder = $this->createQueryBuilder($criteria);
+
+        return $queryBuilder->paginate();
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function sumByCriteria(Criteria $criteria): int
+    {
+        $queryBuilder = $this->createQueryBuilder($criteria);
+
+        $queryBuilder = $queryBuilder->selectRaw('sum(amount)');
+
+        return $queryBuilder->first()->sum;
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function sumUsdByCriteria(Criteria $criteria): int
+    {
+        $queryBuilder = $this->createQueryBuilder($criteria);
+
+        $queryBuilder = $queryBuilder->selectRaw('sum(amount_usd)');
+
+        return $queryBuilder->first()->sum;
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    protected function modelClassName()
+    {
+        return History::class;
+    }
+
+    /**
+     * @param Criteria $criteria
+     * @return \Illuminate\Database\Eloquent\Builder|\Illuminate\Database\Query\Builder
+     */
+    private function createQueryBuilder(Criteria $criteria)
+    {
         $queryBuilder =
             $this
                 ->model
-                    ->query()
-                    ->leftJoin('users', 'users.wallet_id', '=', 'history.wallet_id')
-                    ->where('users.id', '=', $criteria->getUserId());
+                ->query()
+                ->leftJoin('users', 'users.wallet_id', '=', 'history.wallet_id')
+                ->where('users.id', '=', $criteria->getUserId());
 
         if ($criteria->getDateFrom() !== null) {
             $queryBuilder->where('date', '>=', $criteria->getDateFrom());
@@ -36,14 +79,6 @@ final class HistoryRepository extends BaseRepository implements HistoryRepositor
             $queryBuilder->where('date', '<=', $criteria->getDateTo());
         }
 
-        return $queryBuilder->paginate();
-    }
-
-    /**
-     * {@inheritdoc}
-     */
-    protected function modelClassName()
-    {
-        return History::class;
+        return $queryBuilder;
     }
 }
