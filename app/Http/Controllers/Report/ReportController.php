@@ -43,11 +43,14 @@ final class ReportController extends Controller
         $historyListPaginationAware = [];
         $sum = 0;
         $sumUsd = 0;
+        $countPages = 0;
         if ($request->input('userId') !== null) {
             $historyListPaginationAware = $this->service->behave($request);
 
             $sum = $this->historyRepository->sumByCriteria($this->createCriteria($request));
             $sumUsd = $this->historyRepository->sumUsdByCriteria($this->createCriteria($request));
+
+            $countPages = $this->getTotalPagesCount($historyListPaginationAware);
         }
 
         return
@@ -55,7 +58,7 @@ final class ReportController extends Controller
                 'report',
                 [
                     'userList' => User::all(),
-                    'pageList' => [],
+                    'pageList' => $this->getPagesList($countPages),
                     'userIdSelected' => $request->input('userId'),
                     'pageSelected' => $request->input('page'),
                     'dateFrom' => $request->input('dateFrom'),
@@ -63,6 +66,7 @@ final class ReportController extends Controller
                     'operationList' => $this->getOperationList($historyListPaginationAware),
                     'sumInWalletCurrency' => (float) $sum / 100,
                     'sumInUSD' => (float) $sumUsd / 100,
+                    'walletCurr' => 'eur',
                 ]
             );
     }
@@ -92,5 +96,28 @@ final class ReportController extends Controller
                 $request->input('dateFrom'),
                 $request->input('dateTo')
             );
+    }
+
+    /**
+     * @param $historyListPaginationAware
+     * @return int
+     */
+    private function getTotalPagesCount($historyListPaginationAware): int
+    {
+        return (int)($historyListPaginationAware->total() / $historyListPaginationAware->perPage())
+            + ($historyListPaginationAware->total() % $historyListPaginationAware->perPage() ? 1 : 0);
+    }
+
+    /**
+     * @param $countPages
+     * @return array
+     */
+    private function getPagesList($countPages): array
+    {
+        if (!$countPages) {
+            return [];
+        }
+
+        return range(1, $countPages);
     }
 }
