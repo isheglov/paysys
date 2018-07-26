@@ -3,6 +3,8 @@
 namespace App\Repositories;
 
 use App\Models\History;
+use App\Operation\Wallet\History\GetList\Dto\Criteria;
+use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 
 final class HistoryRepository extends BaseRepository implements HistoryRepositoryInterface
 {
@@ -12,6 +14,29 @@ final class HistoryRepository extends BaseRepository implements HistoryRepositor
     public function save(History $history)
     {
         $history->save();
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function findByCriteria(Criteria $criteria): LengthAwarePaginator
+    {
+        $queryBuilder =
+            $this
+                ->model
+                    ->query()
+                    ->leftJoin('users', 'users.wallet_id', '=', 'history.wallet_id')
+                    ->where('users.id', '=', $criteria->getUserId());
+
+        if ($criteria->getDateFrom() !== null) {
+            $queryBuilder->where('date', '>=', $criteria->getDateFrom());
+        }
+
+        if ($criteria->getDateTo() !== null) {
+            $queryBuilder->where('date', '<=', $criteria->getDateTo());
+        }
+
+        return $queryBuilder->paginate();
     }
 
     /**

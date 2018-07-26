@@ -161,6 +161,8 @@ return [
         App\Providers\Operation\Rate\Add\ServiceProvider::class,
         App\Providers\Http\Controllers\Rate\AddController\ServiceProvider::class,
         App\Providers\Operation\Rate\Common\ServiceProvider::class,
+        App\Providers\Http\Controllers\Report\ReportController\ServiceProvider::class,
+        App\Providers\Operation\Wallet\History\GetList\ServiceProvider::class,
 
         /*
          * Application Service Providers...

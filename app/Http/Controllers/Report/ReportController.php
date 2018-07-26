@@ -5,22 +5,41 @@ namespace App\Http\Controllers\Report;
 use App\Http\Controllers\Controller;
 use App\Models\User;
 use App\Operation\Wallet\History\GetList\Dto\History;
+use App\Operation\Wallet\History\GetList\Service;
+use App\Service\ServiceInterface;
+use Illuminate\Contracts\View\View;
 use Illuminate\Http\Request;
 
 final class ReportController extends Controller
 {
     /**
-     * @return \Illuminate\Contracts\View\Factory|\Illuminate\View\View
+     * @var ServiceInterface
+     */
+    private $service;
+
+    /**
+     * @param ServiceInterface|Service $service
+     */
+    public function __construct(ServiceInterface $service)
+    {
+        $this->service = $service;
+    }
+
+    /**
+     * @param Request $request
+     * @return View
      */
     public function show(Request $request)
     {
-        var_dump($request->input('userName'));
-        var_dump($request->input('dateFrom'));
-        var_dump($request->input('dateTo'));
-        var_dump($request->input('page'));
+        $historyListPaginationAware = [];
+        if ($request->input('userId') !== null) {
+            $historyListPaginationAware = $this->service->behave($request);
+        }
 
+        var_dump($historyListPaginationAware->items());
 
-        //call get list service
+        var_dump($historyListPaginationAware->currentPage());
+        var_dump($historyListPaginationAware->total());
 
 
         return
