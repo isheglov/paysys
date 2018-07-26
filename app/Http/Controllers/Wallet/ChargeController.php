@@ -33,7 +33,7 @@ final class ChargeController extends Controller
      */
     public function charge(Request $wallet, int $walletId): JsonResponse
     {
-        if (!$this->validateRequest()) {
+        if (!$this->validateRequest($wallet)) {
             return $this->response('Validation error', Response::HTTP_BAD_REQUEST);
         }
 
@@ -47,12 +47,13 @@ final class ChargeController extends Controller
     }
 
     /**
+     * @param $wallet
      * @return bool
      */
-    private function validateRequest(): bool
+    private function validateRequest($wallet): bool
     {
         // add validation by standart WalletRequest *required
-        return true;
+        return $wallet->get('amount') > 0;
     }
 
     /**

@@ -36,7 +36,7 @@ final class TransferController extends Controller
     public function transfer(Request $request, int $walletFromId, int $walletToId): JsonResponse
     {
 
-        if (!$this->validateRequest()) {
+        if (!$this->validateRequest($request)) {
             return $this->response('Validation error', Response::HTTP_BAD_REQUEST);
         }
 
@@ -50,12 +50,13 @@ final class TransferController extends Controller
     }
 
     /**
+     * @param $request
      * @return bool
      */
-    private function validateRequest(): bool
+    private function validateRequest($request): bool
     {
         // add validation by standart WalletRequest *required
-        return true;
+        return $request->get('amount') > 0;
     }
 
     /**
