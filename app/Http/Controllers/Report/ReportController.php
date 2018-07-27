@@ -42,6 +42,10 @@ final class ReportController extends Controller
      */
     public function export(Request $request)
     {
+        if ($request->input('userId') === null) {
+            return redirect('report');
+        }
+
         $historyList = $this->historyRepository->findByCriteria($this->createCriteria($request));
 
         $report = "Amount;Date\n";
@@ -178,6 +182,10 @@ final class ReportController extends Controller
             ->leftJoin('wallets', 'users.wallet_id', '=', 'wallets.id')
             ->where('users.id', '=', $request->input('userId'))
             ->first();
+
+        if ($curr === null) {
+            return '';
+        }
 
         return strtoupper($curr->currency);
     }
