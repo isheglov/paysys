@@ -73,6 +73,7 @@ final class Service implements ServiceInterface
             return new ErroneousResponse($errorMessage);
         }
 
+        DB::beginTransaction();
         $amountForWalletFrom = $this->convertAmount($request, $walletFrom);
         $this->logger->info(sprintf('Amount from %s', $amountForWalletFrom));
         $amountForWalletTo = $this->convertAmount($request, $walletTo);
@@ -88,7 +89,6 @@ final class Service implements ServiceInterface
             return new ErroneousResponse('Amount is to big');
         }
 
-        DB::beginTransaction();
         $this->addHistoryProcessor->process(
             new History(
                 $walletFrom,
