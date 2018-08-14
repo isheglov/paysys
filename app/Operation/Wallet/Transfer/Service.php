@@ -14,6 +14,7 @@ use App\Service\ServiceInterface;
 use Illuminate\Support\Facades\DB;
 use Psr\Log\LoggerAwareTrait;
 use Psr\Log\LoggerInterface;
+use Throwable;
 
 final class Service implements ServiceInterface
 {
@@ -73,7 +74,6 @@ final class Service implements ServiceInterface
             return new ErroneousResponse($errorMessage);
         }
 
-        DB::beginTransaction();
         $amountForWalletFrom = $this->convertAmount($request, $walletFrom);
         $this->logger->info(sprintf('Amount from %s', $amountForWalletFrom));
         $amountForWalletTo = $this->convertAmount($request, $walletTo);
@@ -89,24 +89,30 @@ final class Service implements ServiceInterface
             return new ErroneousResponse('Amount is to big');
         }
 
-        $this->addHistoryProcessor->process(
-            new History(
-                $walletFrom,
-                -1 * $amountForWalletFrom
-            )
-        );
-        $walletFrom->amount -= $amountForWalletFrom;
-        $this->walletRepository->save($walletFrom);
+        try {
+            DB::beginTransaction();
 
-        $walletTo->amount += $amountForWalletTo;
-        $this->walletRepository->save($walletTo);
-        $this->addHistoryProcessor->process(
-            new History(
-                $walletTo,
-                $amountForWalletTo
-            )
-        );
-        DB::commit();
+            $this->updateBalance(-$amountForWalletFrom, $walletFrom);
+            $this->updateBalance(-$amountForWalletTo, $walletTo);
+
+            $this->addHistoryProcessor->process(
+                new History(
+                    $walletFrom,
+                    -1 * $amountForWalletFrom
+                )
+            );
+            $this->addHistoryProcessor->process(
+                new History(
+                    $walletTo,
+                    $amountForWalletTo
+                )
+            );
+
+            DB::commit();
+        } catch (Throwable $e) {
+            $this->logger->error($e->getMessage(), ['e' => $e]);
+            DB::rollBack();
+        }
 
         $this->logger->info('Creating response');
         return [$walletFrom, $walletTo];
@@ -129,5 +135,15 @@ final class Service implements ServiceInterface
         }
 
         return $request->getMoney()->getAmount();
+    }
+
+    /**
+     * @param int $amount
+     * @param Wallet $wallet
+     * @return void
+     */
+    private function updateBalance(int $amount, Wallet $wallet)
+    {
+        DB::update(DB::raw('UPDATE wallets SET amount = amount + ' . $amount . ' WHERE id = ' . $wallet->id));
     }
 }

@@ -13,6 +13,7 @@ use App\Service\ServiceInterface;
 use Illuminate\Support\Facades\DB;
 use Psr\Log\LoggerAwareTrait;
 use Psr\Log\LoggerInterface;
+use Throwable;
 
 final class Service implements ServiceInterface
 {
@@ -65,23 +66,25 @@ final class Service implements ServiceInterface
             return new ErroneousResponse('Amount is to big');
         }
 
-        DB::beginTransaction();
+        try {
+            DB::beginTransaction();
 
-        $this->logger->info('Charging wallet');
-        $this->chargeWallet($request->getAmount(), $wallet);
+            $this->logger->info('Update balance wallet');
+            $this->updateBalance($request->getAmount(), $wallet);
 
-        $this->logger->info('Saving history');
-        $this->addHistoryProcessor->process(
-            new History(
-                $wallet,
-                $request->getAmount()
-            )
-        );
+            $this->logger->info('Saving history');
+            $this->addHistoryProcessor->process(
+                new History(
+                    $wallet,
+                    $request->getAmount()
+                )
+            );
 
-        $this->logger->info('Saving wallet');
-        $this->saveWallet($wallet);
-
-        DB::commit();
+            DB::commit();
+        } catch (Throwable $e) {
+            $this->logger->error($e->getMessage(), ['e' => $e]);
+            DB::rollBack();
+        }
 
         $this->logger->info('Returning response');
         return $wallet;
@@ -102,17 +105,8 @@ final class Service implements ServiceInterface
      * @param Wallet $wallet
      * @return void
      */
-    private function chargeWallet(int $amount, Wallet $wallet)
+    private function updateBalance(int $amount, Wallet $wallet)
     {
-        $wallet->amount += $amount;
-    }
-
-    /**
-     * @param Wallet $wallet
-     * @return void
-     */
-    protected function saveWallet(Wallet $wallet)
-    {
-        $this->walletRepository->save($wallet);
+        DB::update(DB::raw('UPDATE wallets SET amount = amount + ' . $amount . ' WHERE id = ' . $wallet->id));
     }
 }
